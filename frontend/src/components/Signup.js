@@ -12,25 +12,18 @@ import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { signUp } from "../store/slices/user";
+import Alert from "@mui/material/Alert";
+import Stack from "@mui/material/Stack";
 
 const theme = createTheme();
 
 export default function SignUp() {
   const navigate = useNavigate();
-  const sendRequest = async (values) => {
-    const res = await axios
-      .post("http://localhost:3001/api/signup", {
-        name: values.name,
-        email: values.email,
-        password: values.password,
-      })
-      .catch((err) => console.log(err));
-    const data = res.data;
-    return data;
-  };
-
+  const dispatch = useDispatch();
+  const { error } = useSelector((state) => state.user.signupResponse);
   const formik = useFormik({
     initialValues: {
       name: "",
@@ -38,8 +31,11 @@ export default function SignUp() {
       password: "",
     },
     onSubmit: (values) => {
-      console.log(values);
-      sendRequest(values).then(() => navigate("/login"));
+      dispatch(signUp(values)).then((res) => {
+        if (!res.error) {
+          navigate("/login");
+        }
+      });
     },
     validationSchema: Yup.object({
       name: Yup.string().required("name is Required"),
@@ -70,6 +66,7 @@ export default function SignUp() {
           <Typography component="h1" variant="h5">
             Sign up
           </Typography>
+
           <Box
             component="form"
             noValidate
@@ -135,7 +132,15 @@ export default function SignUp() {
             >
               Sign Up
             </Button>
-            <Grid container justifyContent="flex-end">
+            {error && (
+              <Stack sx={{ width: "100%" }} spacing={2}>
+                <Alert severity="error" sx={{ mt: 2 }}>
+                  {error}
+                </Alert>
+              </Stack>
+            )}
+
+            <Grid container justifyContent="flex-end" sx={{ mt: 2 }}>
               <Grid item>
                 <Link to="/login" variant="body2">
                   Already have an account? Log in

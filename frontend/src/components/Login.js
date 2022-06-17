@@ -12,23 +12,18 @@ import Typography from "@mui/material/Typography";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { login } from "../store/slices/user";
+import Alert from "@mui/material/Alert";
+import Stack from "@mui/material/Stack";
 
 const theme = createTheme();
 
 export default function Login() {
   const navigate = useNavigate();
-  const sendRequest = async (values) => {
-    const res = await axios
-      .post("http://localhost:3001/api/login", {
-        email: values.email,
-        password: values.password,
-      })
-      .catch((err) => console.log(err));
-    const data = res.data;
-    return data;
-  };
+  const dispatch = useDispatch();
+  const { error } = useSelector((state) => state.user.loginResponse);
 
   const formik = useFormik({
     initialValues: {
@@ -36,8 +31,9 @@ export default function Login() {
       password: "",
     },
     onSubmit: (values) => {
-      console.log(values);
-      sendRequest(values).then(() => navigate("/user"));
+      dispatch(login(values)).then((res) => {
+        if (!res.error) navigate("/user");
+      });
     },
     validationSchema: Yup.object({
       password: Yup.string()
@@ -59,7 +55,8 @@ export default function Login() {
           sm={4}
           md={7}
           sx={{
-            backgroundImage: "url(https://source.unsplash.com/random)",
+            backgroundImage:
+              "url(https://source.unsplash.com/1600x900/?nature)",
             backgroundRepeat: "no-repeat",
             backgroundColor: (t) =>
               t.palette.mode === "light"
@@ -129,6 +126,13 @@ export default function Login() {
               >
                 Sign In
               </Button>
+              {error && (
+                <Stack sx={{ width: "100%" }} spacing={2}>
+                  <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
+                    {error}
+                  </Alert>
+                </Stack>
+              )}
               <Grid container>
                 <Grid item>
                   <Link to="/signup" variant="body2">

@@ -4,9 +4,11 @@ import Login from "./components/Login";
 import SignUp from "./components/Signup";
 import Welcome from "./components/Welcome";
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 function App() {
+  const { status } = useSelector((state) => state.user.loginResponse);
   return (
     <React.Fragment>
       <header>
@@ -14,9 +16,13 @@ function App() {
       </header>
       <main>
         <Routes>
+          <Route path="/" element={<Navigate to="/login" />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
-          <Route path="/user" element={<Welcome />} />
+          <Route
+            path="/user"
+            element={status === "success" ? <Welcome /> : <Navigate to="/" />}
+          />
         </Routes>
       </main>
     </React.Fragment>
